@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        // Décommentez quand les credentials seront configurés
+        // MAVEN_USERNAME = credentials('maven-username')
+        // MAVEN_PASSWORD = credentials('maven-password')
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -9,94 +15,147 @@ pipeline {
             }
         }
 
-        stage('Build') {
-            steps {
-                echo 'Construction du projet...'
-                script {
-                    bat 'gradlew.bat clean build -x test'
-                }
-            }
-            post {
-                success {
-                    echo 'Build réussi !'
-                    archiveArtifacts artifacts: '**/build/libs/*.jar', allowEmptyArchive: true
-                }
-            }
-        }
-
         stage('Test') {
             steps {
                 echo 'Lancement des tests...'
                 script {
                     try {
-                        bat 'gradlew.bat test'
+                        bat 'gradlew.bat clean test'
                     } catch (Exception e) {
-                        echo "Tests échoués: ${e.message}"
                         currentBuild.result = 'UNSTABLE'
+                        echo "Tests échoués: ${e.message}"
                     }
                 }
             }
             post {
                 always {
+                    // Archivage des résultats des tests
                     junit '**/build/test-results/test/*.xml'
+
+                    // Génération des rapports Cucumber (si configuré)
+                    // cucumber buildStatus: 'UNSTABLE',
+                    //         fileIncludePattern: '**/*.json',
+                    //         jsonReportDirectory: 'build/reports/cucumber'
                 }
             }
         }
 
-        stage('Generate Documentation') {
+        // Décommentez quand SonarQube sera configuré
+        /*
+        stage('Code Analysis') {
             steps {
-                echo 'Génération de la documentation...'
+                echo 'Analyse du code avec SonarQube...'
                 script {
                     try {
-                        bat 'gradlew.bat javadoc'
+                        withSonarQubeEnv('SonarQube') {
+                            bat 'gradlew.bat sonarqube'
+                        }
                     } catch (Exception e) {
-                        echo "Documentation generation failed: ${e.message}"
+                        echo "Erreur SonarQube: ${e.message}"
                     }
                 }
             }
+        }
+
+        stage('Code Quality') {
+            steps {
+                echo 'Vérification du Quality Gate...'
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+        */
+
+        stage('Build') {
+            steps {
+                echo 'Construction du projet...'
+                bat 'gradlew.bat build -x test'
+
+                echo 'Génération de la documentation...'
+                bat 'gradlew.bat javadoc'
+            }
             post {
                 success {
+                    archiveArtifacts artifacts: '**/build/libs/*.jar', fingerprint: true
                     archiveArtifacts artifacts: '**/build/docs/javadoc/**', allowEmptyArchive: true
+                }
+            }
+        }
+
+        // Décommentez quand Maven repo sera configuré
+        /*
+        stage('Deploy') {
+            steps {
+                echo 'Déploiement vers Maven Repository...'
+                script {
+                    try {
+                        bat 'gradlew.bat publish'
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error("Le déploiement a échoué: ${e.message}")
+                    }
+                }
+            }
+        }
+        */
+
+        stage('Notification') {
+            steps {
+                echo 'Envoi des notifications...'
+                script {
+                    if (currentBuild.result == 'SUCCESS' || currentBuild.result == null) {
+                        emailext (
+                            subject: "✅ Build réussi - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                            body: """
+                                Le build a été effectué avec succès !
+
+                                Projet: ${env.JOB_NAME}
+                                Build: #${env.BUILD_NUMBER}
+                                URL: ${env.BUILD_URL}
+                            """,
+                            to: 'votre-email@example.com'
+                        )
+
+                        // Décommentez quand Slack sera configuré
+                        /*
+                        slackSend (
+                            color: 'good',
+                            message: "✅ Build réussi - ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+                        )
+                        */
+                    }
                 }
             }
         }
     }
 
     post {
-        success {
-            echo '✅ Pipeline terminé avec succès !'
-            emailext (
-                subject: "✅ Build réussi - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: """
-                    Le build a été effectué avec succès !
-
-                    Projet: ${env.JOB_NAME}
-                    Build: #${env.BUILD_NUMBER}
-                    URL: ${env.BUILD_URL}
-                """,
-                to: 'votre-email@example.com',
-                attachLog: true
-            )
-        }
         failure {
-            echo '❌ Le pipeline a échoué !'
+            echo 'Le pipeline a échoué !'
             emailext (
-                subject: "❌ Build échoué - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                subject: "❌ Échec - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """
-                    Le build a échoué !
+                    Le pipeline a échoué !
 
                     Projet: ${env.JOB_NAME}
                     Build: #${env.BUILD_NUMBER}
                     URL: ${env.BUILD_URL}
-
-                    Consultez les logs pour plus de détails.
                 """,
                 to: 'votre-email@example.com',
                 attachLog: true
             )
+
+            // Décommentez quand Slack sera configuré
+            /*
+            slackSend (
+                color: 'danger',
+                message: "❌ Build échoué - ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+            )
+            */
         }
         always {
-            echo "Build terminé avec le statut: ${currentBuild.result ?: 'SUCCESS'}"
+            echo "Pipeline terminé: ${currentBuild.result ?: 'SUCCESS'}"
         }
     }
 }
