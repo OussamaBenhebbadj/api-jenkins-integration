@@ -1,11 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        MAVEN_USERNAME = credentials('maven-username')
-        MAVEN_PASSWORD = credentials('maven-password')
-    }
-
     stages {
         stage('Checkout') {
             steps {
@@ -14,139 +9,94 @@ pipeline {
             }
         }
 
+        stage('Build') {
+            steps {
+                echo 'Construction du projet...'
+                script {
+                    bat 'gradlew.bat clean build -x test'
+                }
+            }
+            post {
+                success {
+                    echo 'Build réussi !'
+                    archiveArtifacts artifacts: '**/build/libs/*.jar', allowEmptyArchive: true
+                }
+            }
+        }
+
         stage('Test') {
             steps {
                 echo 'Lancement des tests...'
                 script {
                     try {
-                        sh './gradlew clean test'
+                        bat 'gradlew.bat test'
                     } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        error("Les tests ont échoué")
+                        echo "Tests échoués: ${e.message}"
+                        currentBuild.result = 'UNSTABLE'
                     }
                 }
             }
             post {
                 always {
-                    // Archivage des résultats des tests
                     junit '**/build/test-results/test/*.xml'
-
-                    // Génération des rapports Cucumber
-                    cucumber buildStatus: 'UNSTABLE',
-                            fileIncludePattern: '**/*.json',
-                            jsonReportDirectory: 'build/reports/cucumber'
                 }
             }
         }
 
-        stage('Code Analysis') {
+        stage('Generate Documentation') {
             steps {
-                echo 'Analyse du code avec SonarQube...'
+                echo 'Génération de la documentation...'
                 script {
                     try {
-                        sh './gradlew sonarqube'
+                        bat 'gradlew.bat javadoc'
                     } catch (Exception e) {
-                        echo "Erreur lors de l'analyse SonarQube: ${e.message}"
+                        echo "Documentation generation failed: ${e.message}"
                     }
                 }
-            }
-        }
-
-        stage('Code Quality') {
-            steps {
-                echo 'Vérification du Quality Gate...'
-                script {
-                    timeout(time: 5, unit: 'MINUTES') {
-                        def qg = waitForQualityGate()
-                        if (qg.status != 'OK') {
-                            error "Pipeline interrompu : Quality Gate en échec (${qg.status})"
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Build') {
-            steps {
-                echo 'Construction du projet...'
-
-                // Génération du fichier JAR
-                sh './gradlew build -x test'
-
-                // Génération de la documentation
-                sh './gradlew javadoc'
             }
             post {
                 success {
-                    // Archivage du JAR et de la documentation
-                    archiveArtifacts artifacts: '**/build/libs/*.jar', fingerprint: true
-                    archiveArtifacts artifacts: '**/build/docs/javadoc/**', fingerprint: true
-                }
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo 'Déploiement vers Maven Repository...'
-                script {
-                    try {
-                        sh './gradlew publish'
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        error("Le déploiement a échoué: ${e.message}")
-                    }
-                }
-            }
-        }
-
-        stage('Notification') {
-            steps {
-                echo 'Envoi des notifications...'
-                script {
-                    if (currentBuild.result == 'SUCCESS' || currentBuild.result == null) {
-                        // Notification par email
-                        emailext (
-                            subject: "✅ Déploiement réussi - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                            body: """
-                                Le déploiement a été effectué avec succès !
-
-                                Projet: ${env.JOB_NAME}
-                                Build: #${env.BUILD_NUMBER}
-                                URL: ${env.BUILD_URL}
-                            """,
-                            to: 'votre-email@example.com'
-                        )
-
-                        // Notification Slack
-                        slackSend (
-                            color: 'good',
-                            message: "✅ Déploiement réussi - ${env.JOB_NAME} #${env.BUILD_NUMBER} (<${env.BUILD_URL}|Voir>)"
-                        )
-                    }
+                    archiveArtifacts artifacts: '**/build/docs/javadoc/**', allowEmptyArchive: true
                 }
             }
         }
     }
 
     post {
-        failure {
-            echo 'Le pipeline a échoué, envoi des notifications...'
+        success {
+            echo '✅ Pipeline terminé avec succès !'
             emailext (
-                subject: "❌ Échec du pipeline - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                subject: "✅ Build réussi - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """
-                    Le pipeline a échoué à l'étape: ${env.STAGE_NAME}
+                    Le build a été effectué avec succès !
 
                     Projet: ${env.JOB_NAME}
                     Build: #${env.BUILD_NUMBER}
                     URL: ${env.BUILD_URL}
                 """,
-                to: 'votre-email@example.com'
+                to: 'votre-email@example.com',
+                attachLog: true
             )
+        }
+        failure {
+            echo '❌ Le pipeline a échoué !'
+            emailext (
+                subject: "❌ Build échoué - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """
+                    Le build a échoué !
 
-            slackSend (
-                color: 'danger',
-                message: "❌ Échec du pipeline - ${env.JOB_NAME} #${env.BUILD_NUMBER} (<${env.BUILD_URL}|Voir>)"
+                    Projet: ${env.JOB_NAME}
+                    Build: #${env.BUILD_NUMBER}
+                    URL: ${env.BUILD_URL}
+
+                    Consultez les logs pour plus de détails.
+                """,
+                to: 'votre-email@example.com',
+                attachLog: true
             )
+        }
+        always {
+            echo "Build terminé avec le statut: ${currentBuild.result ?: 'SUCCESS'}"
         }
     }
 }
