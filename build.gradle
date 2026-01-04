@@ -1,0 +1,76 @@
+plugins {
+    id 'java'
+    id 'jacoco'
+    id 'org.sonarqube' version '4.0.0.2929'
+    id 'maven-publish'
+}
+
+group = 'com.example'
+version = '1.0.0'
+sourceCompatibility = '11'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Spring Boot (si vous faites une API REST)
+    implementation 'org.springframework.boot:spring-boot-starter-web:2.7.14'
+
+    // Tests unitaires
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.14'
+
+    // Cucumber pour les tests BDD
+    testImplementation 'io.cucumber:cucumber-java:7.13.0'
+    testImplementation 'io.cucumber:cucumber-junit:7.13.0'
+    testImplementation 'io.cucumber:cucumber-spring:7.13.0'
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacoco {
+    toolVersion = "0.8.10"
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "votre-projet-key"
+        property "sonar.host.url", "http://localhost:9000"
+        property "sonar.login", "votre-token"
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url = "https://mymavenrepo.com/repo/votre-repo-id/"
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
+            }
+        }
+    }
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.example.Main'
+    }
+}
