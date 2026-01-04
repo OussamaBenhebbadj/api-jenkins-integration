@@ -9,6 +9,8 @@ pipeline {
             }
         }
 
+
+
         stage('Test') {
             steps {
                 echo 'Lancement des tests...'
