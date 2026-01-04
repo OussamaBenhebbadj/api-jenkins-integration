@@ -1,12 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        // Décommentez quand les credentials seront configurés
-        // MAVEN_USERNAME = credentials('maven-username')
-        // MAVEN_PASSWORD = credentials('maven-password')
-    }
-
     stages {
         stage('Checkout') {
             steps {
