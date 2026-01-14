@@ -96,7 +96,7 @@ pipeline {
                         emailext (
                             subject: "Build réussi - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                             body: """
-                                Le build a été effectué avec succès !
+                                Le build a été effectué avec succès!
 
                                 Projet: ${env.JOB_NAME}
                                 Build: #${env.BUILD_NUMBER}
@@ -117,7 +117,7 @@ pipeline {
             emailext (
                 subject: "Échec - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """
-                    Le pipeline a échoué !
+                    Le pipeline a échoué!
 
                     Projet: ${env.JOB_NAME}
                     Build: #${env.BUILD_NUMBER}
