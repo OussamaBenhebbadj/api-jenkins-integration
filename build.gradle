@@ -60,10 +60,10 @@ publishing {
     }
     repositories {
         maven {
-            url = "https://mymavenrepo.com/repo/votre-repo-id/"
+            url = "https://mymavenrepo.com/repo/ubBJi52tq5Ykh73hirYy/"
             credentials {
-                username = System.getenv("MAVEN_USERNAME")
-                password = System.getenv("MAVEN_PASSWORD")
+                username = System.getenv("lo_benhebbadj@esi.dz")
+                password = System.getenv("test0011")
             }
         }
     }

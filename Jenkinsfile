@@ -72,7 +72,7 @@ pipeline {
             }
         }
 
-        /*
+
         stage('Deploy') {
             steps {
                 echo 'Déploiement vers Maven Repository...'
@@ -86,7 +86,7 @@ pipeline {
                 }
             }
         }
-        */
+
 
         stage('Notification') {
             steps {
