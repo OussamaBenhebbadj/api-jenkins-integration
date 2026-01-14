@@ -31,7 +31,7 @@ pipeline {
         stage('Code Analysis') {
             steps {
                 echo 'Analyse du code avec SonarQube...'
-                // Ici on utilise le wrapper pour injecter les variables SONAR_HOST_URL et SONAR_LOGIN
+
                 withSonarQubeEnv('SonarQubeServer') {
                     bat 'gradlew.bat sonarqube'
                 }
@@ -43,7 +43,6 @@ pipeline {
                 echo 'Phase 2.3: Vérification Quality Gate...'
                 timeout(time: 1, unit: 'HOURS') {
                     script {
-                        // waitForQualityGate ne fonctionnera que si withSonarQubeEnv a été utilisé
                         def qg = waitForQualityGate(abortPipeline: true)
                         echo "Quality Gate status: ${qg.status}"
                     }
