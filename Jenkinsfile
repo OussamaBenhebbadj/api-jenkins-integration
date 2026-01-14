@@ -30,31 +30,28 @@ pipeline {
             }
         }
 
-        /*
         stage('Code Analysis') {
             steps {
                 echo 'Analyse du code avec SonarQube...'
-                script {
-                    try {
-                        withSonarQubeEnv('SonarQube') {
-                            bat 'gradlew.bat sonarqube'
-                        }
-                    } catch (Exception e) {
-                        echo "Erreur SonarQube: ${e.message}"
-                    }
-                }
+                bat 'gradlew.bat sonarqube'
             }
         }
 
         stage('Code Quality') {
             steps {
-                echo 'Vérification du Quality Gate...'
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                script {
+                    timeout(time: 10, unit: 'MINUTES') {
+                        def qg = waitForQualityGate()
+                        if (qg.status != 'OK') {
+                            error "Échec du Quality Gate: ${qg.status}"
+                        }
+                    }
                 }
             }
         }
-        */
+
+
+
 
         stage('Build') {
             steps {
@@ -71,64 +68,4 @@ pipeline {
                 }
             }
         }
-
-
-        stage('Deploy') {
-            steps {
-                echo 'Déploiement vers Maven Repository...'
-                withCredentials([usernamePassword(
-                    credentialsId: 'maven-credentials',
-                    usernameVariable: 'MAVEN_USER',
-                    passwordVariable: 'MAVEN_PASSWORD'
-                )]) {
-                    bat 'gradlew.bat publish'
-                }
-            }
-        }
-
-
-        stage('Notification') {
-            steps {
-                echo 'Envoi des notifications..'
-                script {
-                    if (currentBuild.result == 'SUCCESS' || currentBuild.result == null) {
-                        emailext (
-                            subject: "Build réussi - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                            body: """
-                                Le build a été effectué avec succès!
-
-                                Projet: ${env.JOB_NAME}
-                                Build: #${env.BUILD_NUMBER}
-                                URL: ${env.BUILD_URL}
-                            """,
-                            to: 'lo_benhebbadj@esi.dz'
-                        )
-
-                    }
-                }
-            }
-        }
-    }
-
-    post {
-        failure {
-            echo 'Le pipeline a échoué !'
-            emailext (
-                subject: "Échec - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: """
-                    Le pipeline a échoué!
-
-                    Projet: ${env.JOB_NAME}
-                    Build: #${env.BUILD_NUMBER}
-                    URL: ${env.BUILD_URL}
-                """,
-                to: 'lo_benhebbadj@esi.dz',
-                attachLog: true
-            )
-
-        }
-        always {
-            echo "Pipeline terminé: ${currentBuild.result ?: 'SUCCESS'}"
-        }
-    }
 }
