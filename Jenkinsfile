@@ -74,7 +74,7 @@ pipeline {
         stage('Slack Notification') {
                     steps {
                         script {
-                            echo "Envoi de la notification Slack..."
+                            echo "Envoi de la notification Slack"
 
                             def slackUrl = env.'slack-token'
 
