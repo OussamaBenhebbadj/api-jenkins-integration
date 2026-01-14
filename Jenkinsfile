@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
+        stage('Checkoutt') {
             steps {
                 echo 'Récupération du code source...'
                 checkout scm
