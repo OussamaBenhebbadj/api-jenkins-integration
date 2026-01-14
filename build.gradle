@@ -46,24 +46,28 @@ jacocoTestReport {
 
 sonarqube {
     properties {
-        property "sonar.projectKey", "votre-projet-key"
+        property "sonar.projectKey", "matrix-api"
         property "sonar.host.url", "http://localhost:9000"
-        property "sonar.login", "votre-token"
+        property "sonar.login", "8a77f8d9d6c6faa42072841b988a0fc6aee13099"
     }
 }
 
 publishing {
     publications {
-        maven(MavenPublication) {
+        mavenJava(MavenPublication) {
             from components.java
+            groupId = 'com.example'
+            artifactId = 'TP07-Jenkins'
+            version = '1.0'
         }
     }
     repositories {
         maven {
-            url = "https://mymavenrepo.com/repo/ubBJi52tq5Ykh73hirYy/"
+            name = 'myMavenRepo'
+            url ="https://mymavenrepo.com/repo/QS0zrMavTCfpkFXvQKvK/"
             credentials {
-                username = System.getenv("MAVEN_USER")
-                password = System.getenv("MAVEN_PASSWORD")
+                username ="myMavenRepo"
+                password = "admin"
             }
         }
     }
