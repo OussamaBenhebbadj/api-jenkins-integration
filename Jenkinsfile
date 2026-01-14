@@ -40,7 +40,7 @@ pipeline {
 
         stage('Code Quality') {
             steps {
-                echo 'Vérification Quality Gate...'
+                echo 'Vérification Quality Gate.......'
                 timeout(time: 1, unit: 'HOURS') {
                     script {
                         def qg = waitForQualityGate(abortPipeline: true)
