@@ -102,7 +102,7 @@ pipeline {
                                 Build: #${env.BUILD_NUMBER}
                                 URL: ${env.BUILD_URL}
                             """,
-                            to: 'lo_benhebbadj@gmail.com'
+                            to: 'lo_benhebbadj@esi.dz'
                         )
 
                     }
