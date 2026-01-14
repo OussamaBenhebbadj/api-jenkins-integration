@@ -62,13 +62,12 @@ publishing {
         maven {
             url = "https://mymavenrepo.com/repo/ubBJi52tq5Ykh73hirYy/"
             credentials {
-                username = System.getenv("lo_benhebbadj@esi.dz")
-                password = System.getenv("test0011")
+                username = System.getenv("MAVEN_USER")
+                password = System.getenv("MAVEN_PASSWORD")
             }
         }
     }
 }
-
 jar {
     manifest {
         attributes 'Main-Class': 'com.example.Main'

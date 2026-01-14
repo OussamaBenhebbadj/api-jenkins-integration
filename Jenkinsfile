@@ -76,13 +76,12 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Déploiement vers Maven Repository...'
-                script {
-                    try {
-                        bat 'gradlew.bat publish'
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        error("Le déploiement a échoué: ${e.message}")
-                    }
+                withCredentials([usernamePassword(
+                    credentialsId: 'maven-credentials',
+                    usernameVariable: 'MAVEN_USER',
+                    passwordVariable: 'MAVEN_PASSWORD'
+                )]) {
+                    bat 'gradlew.bat publish'
                 }
             }
         }
