@@ -36,16 +36,12 @@ pipeline {
         }
 
         stage('Code Quality') {
-            steps {
-                script {
-                    timeout(time: 10, unit: 'MINUTES') {
-                        def qg = waitForQualityGate()
-                        if (qg.status != 'OK') {
-                            error "Échec du Quality Gate: ${qg.status}"
+                    steps {
+                        echo 'Phase 2.3: Vérification Quality Gate...'
+                        timeout(time: 1, unit: 'HOURS') {
+                            waitForQualityGate abortPipeline: true
                         }
                     }
-                }
-            }
         }
 
         stage('Build') {
