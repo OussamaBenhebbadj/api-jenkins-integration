@@ -25,18 +25,11 @@ pipeline {
             }
             post {
                 always {
-                    // Archivage des résultats des tests
                     junit '**/build/test-results/test/*.xml'
-
-                    // Génération des rapports Cucumber (si configuré)
-                    // cucumber buildStatus: 'UNSTABLE',
-                    //         fileIncludePattern: '**/*.json',
-                    //         jsonReportDirectory: 'build/reports/cucumber'
                 }
             }
         }
 
-        // Décommentez quand SonarQube sera configuré
         /*
         stage('Code Analysis') {
             steps {
@@ -79,7 +72,6 @@ pipeline {
             }
         }
 
-        // Décommentez quand Maven repo sera configuré
         /*
         stage('Deploy') {
             steps {
@@ -102,7 +94,7 @@ pipeline {
                 script {
                     if (currentBuild.result == 'SUCCESS' || currentBuild.result == null) {
                         emailext (
-                            subject: "✅ Build réussi - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                            subject: "Build réussi - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                             body: """
                                 Le build a été effectué avec succès !
 
@@ -110,16 +102,9 @@ pipeline {
                                 Build: #${env.BUILD_NUMBER}
                                 URL: ${env.BUILD_URL}
                             """,
-                            to: 'votre-email@example.com'
+                            to: 'lo_benhebbadj@gmail.com'
                         )
 
-                        // Décommentez quand Slack sera configuré
-                        /*
-                        slackSend (
-                            color: 'good',
-                            message: "✅ Build réussi - ${env.JOB_NAME} #${env.BUILD_NUMBER}"
-                        )
-                        */
                     }
                 }
             }
@@ -130,7 +115,7 @@ pipeline {
         failure {
             echo 'Le pipeline a échoué !'
             emailext (
-                subject: "❌ Échec - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                subject: "Échec - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """
                     Le pipeline a échoué !
 
@@ -138,17 +123,10 @@ pipeline {
                     Build: #${env.BUILD_NUMBER}
                     URL: ${env.BUILD_URL}
                 """,
-                to: 'votre-email@example.com',
+                to: 'lo_benhebbadj@esi.dz',
                 attachLog: true
             )
 
-            // Décommentez quand Slack sera configuré
-            /*
-            slackSend (
-                color: 'danger',
-                message: "❌ Build échoué - ${env.JOB_NAME} #${env.BUILD_NUMBER}"
-            )
-            */
         }
         always {
             echo "Pipeline terminé: ${currentBuild.result ?: 'SUCCESS'}"
