@@ -90,7 +90,7 @@ pipeline {
 
         stage('Notification') {
             steps {
-                echo 'Envoi des notifications...'
+                echo 'Envoi des notifications..'
                 script {
                     if (currentBuild.result == 'SUCCESS' || currentBuild.result == null) {
                         emailext (
