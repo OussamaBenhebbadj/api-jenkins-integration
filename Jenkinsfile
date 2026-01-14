@@ -9,8 +9,6 @@ pipeline {
             }
         }
 
-
-
         stage('Test') {
             steps {
                 echo 'Lancement des tests...'
@@ -50,9 +48,6 @@ pipeline {
             }
         }
 
-
-
-
         stage('Build') {
             steps {
                 echo 'Construction du projet...'
@@ -68,4 +63,6 @@ pipeline {
                 }
             }
         }
+
+    }
 }
