@@ -48,13 +48,13 @@ pipeline {
                             echo "  - Status: ${qg.status}"
 
                             if (qg.status != 'OK') {
-                                echo "⚠️ Quality Gate a échoué avec le statut: ${qg.status}"
+                                echo "⚠Quality Gate a échoué avec le statut: ${qg.status}"
                                 currentBuild.result = 'UNSTABLE'
                             } else {
-                                echo "✅ Quality Gate réussi !"
+                                echo "Quality Gate réussi !"
                             }
                         } catch (Exception e) {
-                            echo "❌ Erreur lors de la vérification du Quality Gate:"
+                            echo "Erreur lors de la vérification du Quality Gate:"
                             echo "Message: ${e.message}"
                             echo "Cause: ${e.cause}"
                             currentBuild.result = 'UNSTABLE'
