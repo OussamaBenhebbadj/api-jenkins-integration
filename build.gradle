@@ -46,7 +46,7 @@ jacocoTestReport {
 
 sonarqube {
     properties {
-        property "sonar.projectKey", "matrix-api"
+        property "sonar.projectKey", "TP07-Jenkins"
         property "sonar.host.url", "http://localhost:9000"
         property "sonar.login", "8a77f8d9d6c6faa42072841b988a0fc6aee13099"
     }
