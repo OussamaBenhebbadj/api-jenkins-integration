@@ -71,21 +71,23 @@ pipeline {
             }
         }
 
-        stage('Slack Notification') {
-            steps {
-                withCredentials([string(credentialsId: 'slack-webhook', variable: 'SLACK_URL')]) {
-                    echo "Envoi de la notification Slack"
+       stage('Slack Notification') {
+           steps {
+               withCredentials([string(credentialsId: 'slack-webhook', variable: 'SLACK_URL')]) {
+                   script {  // <--- IMPORTANT
+                       echo "Envoi de la notification Slack"
 
-                    def message = "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER} - Le JAR est deployé !"
+                       def message = "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER} - Le JAR est deployé !"
 
-                    powershell """
-                        \$webhook = '${SLACK_URL}'
-                        \$json = '{\"text\": \"${message}\"}'
-                        Invoke-RestMethod -Uri \$webhook -Method Post -Body \$json -ContentType 'application/json; charset=utf-8'
-                    """
-                }
-            }
-        }
+                       powershell """
+                           \$webhook = '${SLACK_URL}'
+                           \$json = '{\"text\": \"${message}\"}'
+                           Invoke-RestMethod -Uri \$webhook -Method Post -Body \$json -ContentType 'application/json; charset=utf-8'
+                       """
+                   }
+               }
+           }
+       }
 
     }
 
