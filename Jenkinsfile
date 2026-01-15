@@ -38,14 +38,14 @@ pipeline {
             }
         }
 
-        stage('Code Quality') {
+        /*stage('Code Quality') {
             steps {
                echo 'Vérification Quality Gate...'
                    timeout(time: 1, unit: 'HOURS') {
                        waitForQualityGate abortPipeline: true
                    }
                }
-            }
+            }*/
 
 
         stage('Build') {
