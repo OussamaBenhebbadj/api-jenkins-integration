@@ -72,35 +72,14 @@ pipeline {
         }
 
         stage('Slack Notification') {
-                    steps {
-                        script {
-                            echo "Envoi de la notification Slack"
-
-                            def slackUrl = env.'slack-token'
-
-                            if (slackUrl) {
-                                slackUrl = slackUrl.trim()
-
-                                def message = "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER} - Le JAR est deploye !"
-
-                                // Création du fichier JSON
-                                def jsonContent = """{"text": "${message}"}"""
-                                writeFile file: 'slack-payload.json', text: jsonContent, encoding: 'UTF-8'
-
-                                // Utilisation de PowerShell pour l'envoi (plus fiable que cmd)
-                                powershell """
-                                    \$webhook = '${slackUrl}'
-                                    \$json = Get-Content -Path 'slack-payload.json' -Raw
-                                    Invoke-RestMethod -Uri \$webhook -Method Post -Body \$json -ContentType 'application/json; charset=utf-8'
-                                """
-
-                                // Nettoyage
-                                bat 'if exist slack-payload.json del slack-payload.json'
-                            } else {
-                                echo "ATTENTION : La variable 'slack-token' n'est pas definie."
-                            }
-                        }
-                    }
+            steps {
+                withCredentials([string(credentialsId: 'slack-webhook', variable: 'SLACK_WEBHOOK')]) {
+                    powershell """
+                        \$json = '{ "text": "✅ SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER} - Déploiement terminé" }'
+                        Invoke-RestMethod -Uri "$env:SLACK_WEBHOOK" -Method Post -Body \$json -ContentType 'application/json'
+                    """
+                }
+            }
         }
     }
 
@@ -111,7 +90,7 @@ pipeline {
                 body: "Le déploiement a été effectué avec succès.",
                 to: "lo_benhebbadj@esi.dz"
             )
-            slackSend(channel: '#dev', message: "✅ Pipeline réussi: ${env.JOB_NAME} #${env.BUILD_NUMBER}")
+            slackSend(channel: '#test-canal', message: "✅ Pipeline réussi: ${env.JOB_NAME} #${env.BUILD_NUMBER}")
         }
         failure {
             emailext(
@@ -119,7 +98,7 @@ pipeline {
                 body: "Le pipeline a échoué. Vérifiez Jenkins pour plus de détails.",
                 to: "lo_benhebbadj@esi.dz"
             )
-            slackSend(channel: '#dev', message: "❌ Pipeline échoué: ${env.JOB_NAME} #${env.BUILD_NUMBER}")
+            slackSend(channel: '#test-canal', message: "❌ Pipeline échoué: ${env.JOB_NAME} #${env.BUILD_NUMBER}")
         }
     }
 }
