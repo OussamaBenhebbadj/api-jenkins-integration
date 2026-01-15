@@ -73,14 +73,20 @@ pipeline {
 
         stage('Slack Notification') {
             steps {
-                withCredentials([string(credentialsId: 'slack-webhook', variable: 'SLACK_WEBHOOK')]) {
+                withCredentials([string(credentialsId: 'slack-webhook', variable: 'SLACK_URL')]) {
+                    echo "Envoi de la notification Slack"
+
+                    def message = "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER} - Le JAR est deployé !"
+
                     powershell """
-                        \$json = '{ "text": "✅ SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER} - Déploiement terminé" }'
-                        Invoke-RestMethod -Uri "$env:SLACK_WEBHOOK" -Method Post -Body \$json -ContentType 'application/json'
+                        \$webhook = '${SLACK_URL}'
+                        \$json = '{\"text\": \"${message}\"}'
+                        Invoke-RestMethod -Uri \$webhook -Method Post -Body \$json -ContentType 'application/json; charset=utf-8'
                     """
                 }
             }
         }
+
     }
 
     post {
@@ -90,7 +96,7 @@ pipeline {
                 body: "Le déploiement a été effectué avec succès.",
                 to: "lo_benhebbadj@esi.dz"
             )
-            slackSend(channel: '#test-canal', message: "✅ Pipeline réussi: ${env.JOB_NAME} #${env.BUILD_NUMBER}")
+            slackSend(channel: '#test-canal', message: "✅ Pipeline réussi: ${env.JOB_NAME} #${env.BUILD_NUMBER},tokenCredentialId: 'slack-webhook'")
         }
         failure {
             emailext(
@@ -98,7 +104,7 @@ pipeline {
                 body: "Le pipeline a échoué. Vérifiez Jenkins pour plus de détails.",
                 to: "lo_benhebbadj@esi.dz"
             )
-            slackSend(channel: '#test-canal', message: "❌ Pipeline échoué: ${env.JOB_NAME} #${env.BUILD_NUMBER}")
+            slackSend(channel: '#test-canal', message: "❌ Pipeline échoué: ${env.JOB_NAME} #${env.BUILD_NUMBER}, tokenCredentialId: 'slack-webhook' ")
         }
     }
 }
