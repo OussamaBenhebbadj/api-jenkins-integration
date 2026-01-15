@@ -32,7 +32,7 @@ pipeline {
             steps {
                 echo 'Analyse du code avec SonarQube...'
 
-                withSonarQubeEnv('SonarQubeServer') {
+                withSonarQubeEnv('SonarQube') {
                     bat 'gradlew.bat sonarqube'
                 }
             }
