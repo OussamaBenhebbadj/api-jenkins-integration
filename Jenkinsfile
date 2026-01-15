@@ -33,6 +33,19 @@ pipeline {
                 }
             }
         }
+
+        stage('Code Quality') {
+            steps {
+                echo 'Phase 2.3: Vérification Quality Gate...'
+                timeout(time: 1, unit: 'HOURS') {
+                    script {
+                        def qg = waitForQualityGate(abortPipeline: true)
+                        echo "Quality Gate status: ${qg.status}"
+                    }
+                }
+            }
+        }
+
         stage('Build') {
             steps {
                 echo 'Construction du projet...'
