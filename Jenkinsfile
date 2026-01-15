@@ -98,7 +98,11 @@ pipeline {
                 body: "Le déploiement a été effectué avec succès.",
                 to: "lo_benhebbadj@esi.dz"
             )
-            slackSend(channel: '#test-canal', message: "✅ Pipeline réussi: ${env.JOB_NAME} #${env.BUILD_NUMBER},tokenCredentialId: 'slack-webhook'")
+            slackSend(
+              channel: '#test-canal',
+              message: "✅ Pipeline réussi: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+              tokenCredentialId: 'slack-webhook'
+            )
         }
         failure {
             emailext(
@@ -106,7 +110,7 @@ pipeline {
                 body: "Le pipeline a échoué. Vérifiez Jenkins pour plus de détails.",
                 to: "lo_benhebbadj@esi.dz"
             )
-            slackSend(channel: '#test-canal', message: "❌ Pipeline échoué: ${env.JOB_NAME} #${env.BUILD_NUMBER}, tokenCredentialId: 'slack-webhook' ")
+            slackSend(channel: '#test-canal', message: "❌ Pipeline échoué: ${env.JOB_NAME} #${env.BUILD_NUMBER}", tokenCredentialId: 'slack-webhook')
         }
     }
 }
