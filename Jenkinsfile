@@ -36,11 +36,29 @@ pipeline {
 
         stage('Code Quality') {
             steps {
-                echo 'Phase 2.3: Vérification Quality Gate...'
-                timeout(time: 1, unit: 'HOURS') {
-                    script {
-                        def qg = waitForQualityGate(abortPipeline: true)
-                        echo "Quality Gate status: ${qg.status}"
+                echo 'Vérification Quality Gate...'
+                script {
+                    echo "Attente du Quality Gate de SonarQube..."
+                    echo "TaskId devrait être disponible depuis l'étape précédente"
+
+                    timeout(time: 10, unit: 'MINUTES') {
+                        try {
+                            def qg = waitForQualityGate()
+                            echo "Quality Gate reçu:"
+                            echo "  - Status: ${qg.status}"
+
+                            if (qg.status != 'OK') {
+                                echo "⚠️ Quality Gate a échoué avec le statut: ${qg.status}"
+                                currentBuild.result = 'UNSTABLE'
+                            } else {
+                                echo "✅ Quality Gate réussi !"
+                            }
+                        } catch (Exception e) {
+                            echo "❌ Erreur lors de la vérification du Quality Gate:"
+                            echo "Message: ${e.message}"
+                            echo "Cause: ${e.cause}"
+                            currentBuild.result = 'UNSTABLE'
+                        }
                     }
                 }
             }
