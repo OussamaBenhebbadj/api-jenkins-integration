@@ -36,11 +36,14 @@ pipeline {
 
         stage('Code Quality') {
             steps {
-                echo 'Vérification Quality Gate...'
-                timeout(time: 1, unit: 'HOURS') {
+                echo 'Vérification Quality Gate'
+                timeout(time: 10, unit: 'MINUTES') {
                     script {
-                        def qg = waitForQualityGate(abortPipeline: true)
+                        def qg = waitForQualityGate()
                         echo "Quality Gate status: ${qg.status}"
+                        if (qg.status != 'OK') {
+                            error "Quality Gate failed"
+                        }
                     }
                 }
             }
