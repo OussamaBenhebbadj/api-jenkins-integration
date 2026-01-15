@@ -8,20 +8,21 @@ plugins {
 group = 'com.example'
 version = '1.0.0'
 sourceCompatibility = '11'
+targetCompatibility = '11'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    // Spring Boot (si vous faites une API REST)
+    // Spring Boot (si API REST)
     implementation 'org.springframework.boot:spring-boot-starter-web:2.7.14'
 
     // Tests unitaires
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
     testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.14'
 
-    // Cucumber pour les tests BDD
+    // Cucumber pour tests BDD
     testImplementation 'io.cucumber:cucumber-java:7.13.0'
     testImplementation 'io.cucumber:cucumber-junit:7.13.0'
     testImplementation 'io.cucumber:cucumber-spring:7.13.0'
@@ -44,14 +45,23 @@ jacocoTestReport {
     }
 }
 
+// ======= SonarQube Configuration =======
 sonarqube {
     properties {
         property "sonar.projectKey", "TP07-Jenkins"
         property "sonar.host.url", "http://localhost:9000"
         property "sonar.login", "8a77f8d9d6c6faa42072841b988a0fc6aee13099"
-    }
-}////
 
+        // Déclarer explicitement les sources et les binaires
+        property "sonar.sources", "src/main/java"
+        property "sonar.tests", "src/test/java"
+        property "sonar.java.binaries", "build/classes/java/main"
+        property "sonar.junit.reportPaths", "build/test-results/test"
+        property "sonar.jacoco.reportPaths", "build/jacoco/test.exec"
+    }
+}
+
+// ======= Maven Publish Configuration =======
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -64,14 +74,16 @@ publishing {
     repositories {
         maven {
             name = 'myMavenRepo'
-            url ="https://mymavenrepo.com/repo/QS0zrMavTCfpkFXvQKvK/"
+            url = "https://mymavenrepo.com/repo/QS0zrMavTCfpkFXvQKvK/"
             credentials {
-                username ="myMavenRepo"
+                username = "myMavenRepo"
                 password = "admin"
             }
         }
     }
 }
+
+// ======= JAR avec main class =======
 jar {
     manifest {
         attributes 'Main-Class': 'com.example.Main'
