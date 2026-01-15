@@ -74,7 +74,7 @@ pipeline {
        stage('Slack Notification') {
            steps {
                withCredentials([string(credentialsId: 'slack-webhook', variable: 'SLACK_URL')]) {
-                   script {  // <--- IMPORTANT
+                   script {
                        echo "Envoi de la notification Slack"
 
                        def message = "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER} - Le JAR est deployé !"
