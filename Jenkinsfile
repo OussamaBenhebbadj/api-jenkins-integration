@@ -49,7 +49,6 @@ pipeline {
             }
         }
 
-
         stage('Build') {
             steps {
                 echo 'Construction du projet...'
