@@ -1,6 +1,5 @@
 pipeline {
     agent any
-
     stages {
         stage('Checkout') {
             steps {
@@ -8,7 +7,6 @@ pipeline {
                 checkout scm
             }
         }
-
         stage('Test') {
             steps {
                 echo 'Lancement des tests...'
@@ -27,32 +25,18 @@ pipeline {
                 }
             }
         }
-
         stage('Code Analysis') {
             steps {
                 echo 'Analyse du code avec SonarQube...'
-
                 withSonarQubeEnv('SonarQube') {
                     bat 'gradlew.bat sonarqube'
                 }
             }
         }
-
-        /*stage('Code Quality') {
-            steps {
-               echo 'Vérification Quality Gate...'
-                   timeout(time: 1, unit: 'HOURS') {
-                       waitForQualityGate abortPipeline: true
-                   }
-               }
-            }*/
-
-
         stage('Build') {
             steps {
                 echo 'Construction du projet...'
                 bat 'gradlew.bat build -x test'
-
                 echo 'Génération de la documentation...'
                 bat 'gradlew.bat javadoc'
             }
@@ -63,34 +47,13 @@ pipeline {
                 }
             }
         }
-
         stage('Deploy') {
             steps {
                 echo 'Déploiement du JAR...'
                 bat 'gradlew.bat publish'
             }
         }
-
-       stage('Slack Notification') {
-           steps {
-               withCredentials([string(credentialsId: 'slack-webhook', variable: 'SLACK_URL')]) {
-                   script {
-                       echo "Envoi de la notification Slack"
-
-                       def message = "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER} - Le JAR est deployé !"
-
-                       powershell """
-                           \$webhook = '${SLACK_URL}'
-                           \$json = '{\"text\": \"${message}\"}'
-                           Invoke-RestMethod -Uri \$webhook -Method Post -Body \$json -ContentType 'application/json; charset=utf-8'
-                       """
-                   }
-               }
-           }
-       }////////
-
     }
-
     post {
         success {
             emailext(
@@ -98,11 +61,9 @@ pipeline {
                 body: "Le déploiement a été effectué avec succès.",
                 to: "lo_benhebbadj@esi.dz"
             )
-            slackSend(
-              channel: '#test-canal',
-              message: "✅ Pipeline réussi: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-              tokenCredentialId: 'slack-webhook'
-            )
+            script {
+                sendSlackNotification("✅ Pipeline réussi: ${env.JOB_NAME} #${env.BUILD_NUMBER} - Le JAR est déployé !")
+            }
         }
         failure {
             emailext(
@@ -110,7 +71,19 @@ pipeline {
                 body: "Le pipeline a échoué. Vérifiez Jenkins pour plus de détails.",
                 to: "lo_benhebbadj@esi.dz"
             )
-            slackSend(channel: '#test-canal', message: "❌ Pipeline échoué: ${env.JOB_NAME} #${env.BUILD_NUMBER}", tokenCredentialId: 'slack-webhook')
+            script {
+                sendSlackNotification("❌ Pipeline échoué: ${env.JOB_NAME} #${env.BUILD_NUMBER}")
+            }
         }
+    }
+}
+
+def sendSlackNotification(String message) {
+    withCredentials([string(credentialsId: 'slack-webhook', variable: 'SLACK_URL')]) {
+        powershell """
+            \$webhook = '${SLACK_URL}'
+            \$json = @{text='${message}'} | ConvertTo-Json
+            Invoke-RestMethod -Uri \$webhook -Method Post -Body \$json -ContentType 'application/json; charset=utf-8'
+        """
     }
 }
