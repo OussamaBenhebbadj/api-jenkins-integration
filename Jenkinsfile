@@ -9,7 +9,7 @@ pipeline {
         }
         stage('Test') {
             steps {
-                echo 'Lancement des tests...'
+                echo 'Lancement des tests......'
 
                 script {
                     try {
@@ -19,7 +19,6 @@ pipeline {
                         echo "Tests échoués: ${e.message}"
                     }
                 }
-
                 cucumber buildStatus: 'UNSTABLE',
                          fileIncludePattern: 'reports/example-report.json'
             }
