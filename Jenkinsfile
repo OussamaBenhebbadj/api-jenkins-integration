@@ -10,6 +10,7 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Lancement des tests...'
+
                 script {
                     try {
                         bat 'gradlew.bat clean test'
@@ -18,16 +19,19 @@ pipeline {
                         echo "Tests échoués: ${e.message}"
                     }
                 }
+
                 cucumber buildStatus: 'UNSTABLE',
-                                reportTitle: 'My report',
-                                fileIncludePattern: 'reports/example-report.json',
+                         reportTitle: 'My report',
+                         fileIncludePattern: 'reports/example-report.json'
             }
+
             post {
                 always {
                     junit '**/build/test-results/test/*.xml'
                 }
             }
         }
+
         stage('Code Analysis') {
             steps {
                 echo 'Analyse du code avec SonarQube...'
