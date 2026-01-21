@@ -18,6 +18,9 @@ pipeline {
                         echo "Tests échoués: ${e.message}"
                     }
                 }
+                cucumber buildStatus: 'UNSTABLE',
+                                reportTitle: 'My report',
+                                fileIncludePattern: 'reports/example-report.json',
             }
             post {
                 always {
