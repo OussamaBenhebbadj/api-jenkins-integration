@@ -1,3 +1,5 @@
+package com.example;
+
 import com.example.exception.NoSquareException;
 import com.example.model.Matrix;
 import com.example.service.MatrixMathematics;

@@ -15,21 +15,14 @@ repositories {
 }
 
 dependencies {
-    // Spring Boot (si API REST)
-    implementation 'org.springframework.boot:spring-boot-starter-web:2.7.14'
 
-    // Tests unitaires
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.14'
-
-    // Cucumber pour tests BDD
-    testImplementation 'io.cucumber:cucumber-java:7.13.0'
-    testImplementation 'io.cucumber:cucumber-junit:7.13.0'
-    testImplementation 'io.cucumber:cucumber-spring:7.13.0'
+    testImplementation 'io.cucumber:cucumber-java:6.0.0'
+    testImplementation 'io.cucumber:cucumber-junit:6.0.0'
+    testImplementation 'junit:junit:4.13.1'
 }
 
 test {
-    useJUnitPlatform()
+    useJUnit()
     finalizedBy jacocoTestReport
 }
 
