@@ -16,7 +16,7 @@ pipeline {
                         bat 'gradlew.bat clean test'
                     } catch (Exception e) {
                         currentBuild.result = 'UNSTABLE'
-                        echo "Tests ont échoués: ${e.message}"
+                        echo "Tests ont échoués.....: ${e.message}"
                     }
                 }
                 cucumber buildStatus: 'UNSTABLE',
